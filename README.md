@@ -3,7 +3,8 @@
 HERC Protocol Software Access Tokens are utlized as a throughput for Interopertable Blockchain Usage. A full description of the protocol may be found in our whitepaper. This repository contains the system of Executable Distributed Code Contracts built with Solidity comprising HERC protocol's native token (HERC), decentralized governance structure, and throughput exchange. 
 Truffle is used for deployment. Mocha is used for unit tests. 
 
-Join the [chat](https:discord.gg/g52zM5)
+Join the [![Discord](https://img.shields.io/discord/102860784329052160.svg)](https://discord.gg/g52zM5)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Useful HERC Documentation
 
