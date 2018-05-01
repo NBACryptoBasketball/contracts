@@ -12,7 +12,7 @@ Truffle is used for deployment. Mocha is used for unit tests.
 Join the [![Discord](https://img.shields.io/discord/102860784329052160.svg)](https://discord.gg/ntWZ53W)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-![HERC](herc.jpg)
+![HERC](Hercules.png)
 
 ## Useful HERC Documentation
 
