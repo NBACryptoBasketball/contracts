@@ -70,7 +70,7 @@ npm run test
 
 ### Contributing	
 
-HERC protocol is an open source and community based project to which the core development team highly encourages fellow developers to build improvements and scale the future of the platform. 
+HERC protocol is an open source and community based project to which the core development team highly encourages fellow developers to build improvements and scale the future of the platform.  
 To report bugs within the HERC smart contracts or unit tests, please create an issue in this repository. 
 
 ## HIPS
