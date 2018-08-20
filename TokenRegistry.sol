@@ -1,6 +1,6 @@
 pragma solidity ^0.4.19
 
-/*
+/* 
 
   Copyright 2017 HERC SEZC
 
