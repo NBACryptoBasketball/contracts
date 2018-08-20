@@ -56,6 +56,7 @@ contract HERCToken is Token("HERC", "Hercules", 18, 234259085), ERC20, ERC223 {
 
     using Addresses for address;
 
+    mapping(address=>int) withdrawMutex;
 
 
     constructor()
@@ -118,6 +119,9 @@ contract HERCToken is Token("HERC", "Hercules", 18, 234259085), ERC20, ERC223 {
 
             _value <= _balanceOf[msg.sender]) {
 
+            if ( withdrawMutex[msg.sender] == true) { throw; }
+            
+            withdrawMutex[msg.sender] = true;
 
 
             if (_to.isContract()) {
@@ -134,6 +138,7 @@ contract HERCToken is Token("HERC", "Hercules", 18, 234259085), ERC20, ERC223 {
 
             _balanceOf[_to] = _balanceOf[_to].add(_value);
 
+            withdrawMutex[msg.sender] = false;
 
 
             return true;
@@ -172,6 +177,9 @@ contract HERCToken is Token("HERC", "Hercules", 18, 234259085), ERC20, ERC223 {
 
             _balanceOf[_from] >= _value) {
 
+            if ( withdrawMutex[msg.sender] == true) { throw; }
+            
+            withdrawMutex[msg.sender] = true;
 
 
               _allowances[_from][msg.sender] -= _value;
@@ -192,6 +200,7 @@ contract HERCToken is Token("HERC", "Hercules", 18, 234259085), ERC20, ERC223 {
 
             _balanceOf[_to] = _balanceOf[_to].add(_value);
 
+            withdrawMutex[msg.sender] = false;
 
 
            emit Transfer(_from, _to, _value);
