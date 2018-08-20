@@ -1,0 +1,59 @@
+var CreateAsset = artifacts.require('CreateAsset')
+var utils = require("./utils.js") // events, old
+require('truffle-test-utils').init();
+
+
+contract('CreateAsset', async functio(accounts) {
+    let account0 = accounts[0]
+    let account1 = accounts[1]
+
+    before('init', async function() {
+        let createAsset = await CreateAsset.deployed()
+    })
+
+    it('all-logic', async function() {
+        let createAsset = await CreateAsset.deployed()
+
+        let success = createAsset.addRecipient(account0)
+        let isRecipient = createAsset.isRecipient(account0)
+        
+        // todo recheck underscore methods _createAsset
+        let newAssetResult = await createAsset._createAsset('name', 'description', 'manufacturer', (new Date).getTime(), account0)
+
+        assert.web3Event(newAssetResult, {
+            event: 'NewAssetCreate',
+            args: {
+              param_1: 0, // id
+              param_2: 'name',
+              param_3: 'manufacter',
+            }
+        }, 'NewAssetCreate is emitted')
+          
+//        utils.assertEvent(createAsset, { event: "NewAssetCreate", logIndex: 1, args: { name: "bread" }});
+/*
+        let event = createAsset['NewAssetCreate']()
+        event.watch()
+        event.get((error, logs) => {
+            var log = _.filter(logs, filter);
+            if (log) {
+            }
+        })
+*/
+        let assetId = 0
+        let asset = await createAsset._getAsset(assetId)
+
+        let NewTransatctionResult = await createAsset._startTransaction(account0, "origin", "destination", (new Date).getTime(), false)
+        
+        assert.web3Event(NewTransatctionResult, {
+            event: 'NewTransactionCreated',
+            args: {
+              param_1: 0, // txid
+              param_2: 'origin',
+              param_3: 'destination',
+            }
+        }, 'NewTransactionCreated is emitted')
+          
+        let txId = 0
+        let transaction = await createAsset._getTransaction(txId)
+    })
+})
