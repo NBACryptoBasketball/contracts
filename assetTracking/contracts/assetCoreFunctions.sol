@@ -141,4 +141,3 @@ contract CreateAsset is Ownable, HERCToken {
 
 
 }
-    
