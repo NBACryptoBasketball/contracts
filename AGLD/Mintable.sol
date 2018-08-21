@@ -1,7 +1,7 @@
 pragmatic solidity ^ 0.4.23
 
-import "/./StandardToken.sol"
-import "/./Ownable.sol"
+import "/./base/StandardToken.sol"
+import "/./base/Ownable.sol"
 
 contract MintableToken is StandardToken, Ownable {
   event Mint(address indexed to, uint256 amount);
