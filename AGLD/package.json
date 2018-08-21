@@ -1,0 +1,39 @@
+{
+  "name": "mintable-asset-token",
+  "version": "0.0.1",
+  "description": "Mintable Asset Tokens on Hercules",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test",
+    "compile": "truffle compile",
+    "migrate-local": "truffle migrate --network=local --reset",
+    "migrate-ropsten": "truffle migrate --network=ropsten --reset",
+    "flatten": "sol-merger './contracts/*.sol' ./flat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hercone/agld.git"
+  },
+  "author": "HERC SEZC",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/HERCone/agld/issues"
+  },
+  "homepage": "https://github.com/HERCone/AGLD/#readme",
+  "dependencies": {
+    "babel-polyfill": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-stage-2": "6.24.1",
+    "babel-preset-stage-3": "6.24.1",
+    "babel-register": "6.26.0",
+    "ethereumjs-testrpc": "4.1.1",
+    "truffle": "4.0.1",
+    "truffle-test-utils": "^0.1.0"
+  },
+  "devDependencies": {
+    "sol-merger": "0.1.2"
+  }
+}
