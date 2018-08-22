@@ -1,6 +1,7 @@
-# AnthemGold : The MicroWeighted Gold Bullion Backed CryptoCurrency Verified by the Hercules Platform
+# mintableAssetTokens (mAT) & AnthemGold : The MicroWeighted Gold Bullion Backed CryptoCurrency Verified by the Hercules Platform
 
-A full description of the CryptoCurrency may be found in our whitepaper. This repository contains the system of Executable Distributed Code Contracts built with Solidity comprising HERC protocol's native token (HERC), decentralized governance structure, and throughput exchange. 
+A full description of the CryptoCurrency may be found in our whitepaper. This repository contains the system of Executable Distributed Code Contracts built with Solidity comprising HERC protocol's native token (HERC), decentralized governance structure, and minting of new asset tokens once verified through the Hercules Platform. 
+
 Truffle is used for deployment. Mocha is used for unit tests. 
 
 Join the [![Discord](https://img.shields.io/discord/102860784329052160.svg)](https://discord.gg/g52zM5)
@@ -11,7 +12,7 @@ Join the [![Discord](https://img.shields.io/discord/102860784329052160.svg)](htt
 ## Useful AGLD Documentation
 
  * [AGLD.COM](https://anthemgold.com)
- * [Whitepaper](https://github.com/anthemgold/whitepaper)
+ * [Whitepaper](https://github.com/anthemgold/whitepaper) < - Working Project
 
 ### Installing Dependancies: 
 
