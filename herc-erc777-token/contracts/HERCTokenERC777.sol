@@ -28,16 +28,16 @@ import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract HERCToken is ERC777ERC20BaseToken, Ownable {
     address private mBurnOperator;
 
-    constructor(
+    constructor (   
         address[] _defaultOperators,
-        address _burnOperator
-    )
-    ERC777ERC20BaseToken(
+        address _burnOperator,
+    
+        ERC777ERC20BaseToken(
         "Hercules", // name
         "HERC", // symbol
         1, // granularity
         _defaultOperators
-    ) public {
+    )) public {
         bytes memory operatorData = new bytes(0);
         mint(msg.sender, 234259085, operatorData);
         mBurnOperator = _burnOperator;

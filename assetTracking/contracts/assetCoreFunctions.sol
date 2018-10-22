@@ -19,124 +19,124 @@ import "./Ownable.sol";
 import "./SafeMath.sol";
 import "./HERCToken.sol";
 
-contract CreateAsset is Ownable, HERCToken {
+contract AssetCoreFunctions is Ownable, HERCToken {
    
     using SafeMath for uint256;
+// When a new asset is registered records a mapping of 
+// msg.sender to new Asset 
 
-    event NewAssetCreate(uint, string, string); //thinking should be hercID, assetId, 
-    event NewTransactionCreated(uint, string, string);
+    event NewAssetRegisterd(); //thinking should be hercID, assetId, 
+    // event NewTransactionCreated(uint, string, string);
     
-    // event AssetCreate(address account, string uuid, string manufacturer);
-    // event RejectCreate(address account, string uuid, string message);
-    // event AssetTransfer(address from, address to, string uuid);
-    // event RejectTransfer(address from, address to, string uuid, string message);
+    struct Asset {
+        string _assetName;
+        string _organizationName;
+        uint _fctHash;
+        uint _hercId;
+    }
     
-    uint _hercId; // this will be the user id
-    
-    Asset _newAsset;
-    Transaction _newTrans;
-    address _newReceiver;
+    address user = msg.sender;  // this will be the user id
+        
+    mapping (address => Asset) userAssets; // assets mapped to user addresses
+    mapping (uint => address) assetOwners; // links herc ID to address
 
-    // Asset[] public assets;
-    
-    // Transaction[] public transactions;
-    
-    mapping (uint => Asset) assets; //  links _Id to asset, starting with a single but will be an array in the future
-    mapping (uint => Transaction) transactions;
-    
-    mapping (uint => address) assetOwners; // links herc Id to eth address owner
-    mapping (uint => address) transactionOwners; // txid to address
-    mapping (address => uint) ownerAssetCount; // hercId mapped to asset arrays
-    mapping (address => uint) ownerTransactionCount; // id to Transaction
+   
+//    function  registerNewAsset(
+//         string assetName,
+//         string organizationName,
+//         uint fctHash,
+//         uint hercId
+//         ) public 
+//         onlyOwner
+//         {
+       
+//         uint _assetId = ownerAssetCount[msg.sender]++;
+        
+//         assets[user] = (Asset(assetName, organizationName, fctHash, hercId));
+        
+//         assetOwners[hercId] = msg.sender;
+      
+//     }
 
-    mapping (address => mapping(address => bool)) recipientList;    
-
-
-    modifier isRecipient(address newReceiver) {
-        require(recipientList[msg.sender][newReceiver]);
+    address public hercContract = 0xC443f11CfA23C1b5a098a46ceFb76cc998089a46; //will be herc Contract Address
+    address public user = msg.sender;
+    uint newAssetFee = 10000;
+    uint viewerFee; 
+    uint transactionFee; 
+   
+    modifier validValue {
+        assert(msg.value <= balanceOf(msg.sender));
         _;
     }
    
-    function addRecipient(address receiver) public onlyOwner returns(bool) {
-        
-        return recipientList[msg.sender][receiver] = true;
+    // FOR CHANGES
+    function setTo(address _hercContract) public {
+        hercContract = _hercContract;
     }
-
-    struct Asset {
-
-        string name;
-        string description;
-        string manufacturer;
-        uint id;
-        uint createdOn;
-        address owner;
-        bool exists;
-        mapping(address => bool) recpientList;
-        // uint[] components; // not needed currently
-        }
-        
-   
-   
-   function  _createAsset(
-        string _name,
-        string _description,
-        string _manufacturer,
-        uint _createdOn,
-        address _owner
-        // bool _exists useful in the future
-        
-        ) public 
-        onlyOwner
-        {
-       
-        uint _assetId = ownerAssetCount[msg.sender]++;
-        
-        assets[_assetId] = (Asset(_name, _description, _manufacturer, _assetId, _createdOn, _owner, true));
-        
-        assetOwners[_assetId] = msg.sender;
-        
-        
-
-        emit NewAssetCreate (_assetId, assets[_assetId].name, assets[_assetId].manufacturer); 
-      
-    }
-
-    function _getAsset(uint id) public constant returns(uint, string, string) {
-        return (assets[id].id, assets[id].name, assets[id].manufacturer);
-    }
-
-     struct Transaction {
-        // perhaps implement lat and long in addition or instead of strings
-        uint transactionId;    
-        address to;    
-        string origin;
-        string destination;
-        uint startDate;
-        bool error;
-
+     
+     // FOR CHANGES
+    function setChainFee(uint _chainFee) public {
+        newAssetFee = _chainFee;
     }
     
-    function _startTransaction(
-       
-        address _to,
-        string _origin,
-        string _destination,
-        uint _startDate,
-        bool _error
-        )
-    public
-    isRecipient(_to) {   
-        uint _transId = ownerTransactionCount[msg.sender]++;
-        transactions[_transId] = (Transaction(_transId, _to, _origin, _destination, _startDate, _error));
-        transactionOwners[_transId] = msg.sender;
-        
-        
-        emit NewTransactionCreated(_transId, _origin, _destination);
+    // Still Unsure what this is value is
+    function setViewerFee(uint _viewerFee) public {
+        viewerFee = _viewerFee;
     }
 
-    function _getTransaction(uint id) public constant  returns(uint, string, string, uint){
-        return (transactions[id].transactionId, transactions[id].origin, transactions[id].destination, transactions[id].startDate);
+    function transfer (uint _value) onlyOwner validValue
+        public
+        returns (bool) {
+        return transfer(hercContract, _value);
     }
+   
+    function registerNewAsset() onlyOwner validValue public {
+        transfer(hercContract, newAssetFee); 
+    }
+    
+    function assetTransactionFee(uint _transCost) onlyOwner validValue public {
+        transfer(hercContract, _transCost);
+    }
+
+
+
+
+    // function _getAsset(uint id) public constant returns(uint, string, string) {
+    //     return (assets[id].id, assets[id].name, assets[id].manufacturer);
+    // }
+
+    //  struct Transaction {
+    //     // perhaps implement lat and long in addition or instead of strings
+    //     uint transactionId;    
+    //     address to;    
+    //     string origin;
+    //     string destination;
+    //     uint startDate;
+    //     bool error;
+
+    // }
+    
+    // function _startTransaction(
+       
+    //     address _to,
+    //     string _origin,
+    //     string _destination,
+    //     uint _startDate,
+    //     bool _error
+    //     )
+    // public
+    // isRecipient(_to) {   
+    //     uint _transId = ownerTransactionCount[msg.sender]++;
+    //     transactions[_transId] = (Transaction(_transId, _to, _origin, _destination, _startDate, _error));
+    //     transactionOwners[_transId] = msg.sender;
+        
+        
+    //     emit NewTransactionCreated(_transId, _origin, _destination);
+    // }
+
+    // function _getTransaction(uint id) public constant  returns(uint, string, string, uint){
+    //     return (transactions[id].transactionId, transactions[id].origin, transactions[id].destination, transactions[id].startDate);
+    // }
 
 
 
