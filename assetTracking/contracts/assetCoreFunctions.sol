@@ -13,131 +13,227 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
+// I had difficulty importing the Herc777 contract(s), I believe the functionality I need can be found in Token.sol
+
 pragma solidity ^0.4.19;
-    
-import "./Ownable.sol";
-import "./SafeMath.sol";
-import "./HERCToken.sol";
+    import "./Ownable.sol";
+    import "./SafeMath.sol";
+    import "./HERCToken.sol";
+  
+contract AssetCoreFunction is Ownable, HERCToken {
 
-contract AssetCoreFunctions is Ownable, HERCToken {
-   
     using SafeMath for uint256;
-// When a new asset is registered records a mapping of 
-// msg.sender to new Asset 
-
-    event NewAssetRegisterd(); //thinking should be hercID, assetId, 
-    // event NewTransactionCreated(uint, string, string);
     
-    struct Asset {
-        string _assetName;
-        string _organizationName;
-        uint _fctHash;
-        uint _hercId;
-    }
-    
-    address user = msg.sender;  // this will be the user id
-        
-    mapping (address => Asset) userAssets; // assets mapped to user addresses
-    mapping (uint => address) assetOwners; // links herc ID to address
-
-   
-//    function  registerNewAsset(
-//         string assetName,
-//         string organizationName,
-//         uint fctHash,
-//         uint hercId
-//         ) public 
-//         onlyOwner
-//         {
-       
-//         uint _assetId = ownerAssetCount[msg.sender]++;
-        
-//         assets[user] = (Asset(assetName, organizationName, fctHash, hercId));
-        
-//         assetOwners[hercId] = msg.sender;
-      
-//     }
-
     address public hercContract = 0xC443f11CfA23C1b5a098a46ceFb76cc998089a46; //will be herc Contract Address
+   
     address public user = msg.sender;
+   
     uint newAssetFee = 10000;
-    uint viewerFee; 
-    uint transactionFee; 
+    uint viewerFee = 0x20; 
+    // uint transactionFee; 
+    
+    event NewAssetRegistered(string _organizationName, uint _hercId, uint _fctHash); 
    
-    modifier validValue {
-        assert(msg.value <= balanceOf(msg.sender));
-        _;
-    }
+    event OriginatorTransactionCreated(string _organizationName, uint hercId, uint _fctHash);
    
-    // FOR CHANGES
-    function setTo(address _hercContract) public {
-        hercContract = _hercContract;
-    }
-     
-     // FOR CHANGES
-    function setChainFee(uint _chainFee) public {
-        newAssetFee = _chainFee;
+    event ReceivingTransactionCreated(string _organizationName, uint hercId, uint _fctHash);
+    
+    
+// When a new asset is registered a mapping of 
+// the newAsset to msg.sender occurs 
+    
+    // Asset mappings
+    mapping (address => NewAsset) assetAddresses; // assets mapped to user addresses
+    address[] public assetAccounts; // Array of address with assets
+ 
+    struct NewAsset {
+        uint fctHash;
+        uint hercId;
     }
     
-    // Still Unsure what this is value is
-    function setViewerFee(uint _viewerFee) public {
-        viewerFee = _viewerFee;
+    function registerNewAsset(address _address, uint _hercId, uint _fctHash) onlyOwner public payable {
+        NewAsset storage asset = assetAddresses[_address];
+        
+        asset.hercId =_hercId;
+        asset.fctHash =_fctHash;
+        
+         assetAccounts.push(_address) -1;
+         transfer(hercContract, newAssetFee);
+    }
+    
+    function getAssets() view public returns(address[]){
+        return assetAccounts;
+    }
+    
+    function getAsset(address _address) view public returns(uint) {
+         return assetAddresses[_address].hercId;
+    }
+    
+    function countAssets() view public returns (uint) {
+        return assetAccounts.length;
     }
 
-    function transfer (uint _value) onlyOwner validValue
-        public
-        returns (bool) {
-        return transfer(hercContract, _value);
+   // Transaction mappings
+    mapping (address => OrigTrans) origTransAdresses;
+    address[] public origTransAccounts;
+
+  // originator transaction
+   struct OrigTrans { 
+       string orgName;
+       uint hercId;
+       uint fctHash;
     }
-   
-    function registerNewAsset() onlyOwner validValue public {
-        transfer(hercContract, newAssetFee); 
-    }
-    
-    function assetTransactionFee(uint _transCost) onlyOwner validValue public {
+
+    function newOrigTrans(address _address, uint _transCost, uint _hercId, uint _fctHash, string _orgName) onlyOwner validValue public payable {
+        OrigTrans storage origTrans = origTransAdresses[_address];
+        origTrans.orgName   
+        origTrans.hercId = _hercId;
+        origTrans.fctHash = fctHash;
+        origTransAccounts[_addres] = origTrans;
         transfer(hercContract, _transCost);
     }
+   
+   // recipient transaction
+  struct RecipTrans {
+        address recipAddress;
+        string origOrgName;
+        string recipOrgName;
+        uint hercId;
+        uint origTransFctHash;
+        uint recipTransFctHash;
+   }
+
+   function newRecipTrans(
+        address _address,
+        string _origOrgName,
+        string _recipOrgName,
+        uint _hercId,
+        uint _origTransFctHash,
+        uint _recipTransFctHash,
+        uint _transCost
+
+        ) onlyOwner public payable {
+    
+        RecipTrans storage recipTrans = recipTransAdresses[_address];
+        
+        recipTrans.origOrgName = _origOrgName;
+        recipTrans.recipOrgName = _recipOrgName;
+        recipTrans.hercId = _hercId;
+        recipTrans.origTransFctHash = _origTransFctHash;
+        recipTrans.recipTransFctHash = _recipTransFctHash;
+        
+        // recipTransAdresses[_address] = recipTrans;
+        recipTransAccounts.push(_address);
+        transfer(hercContract, _transCost);
+    }
+// need something to attach the orig transactions to the recip trans, probably need to discuss further
+
+    
+
+    function getAllOriginTrans() view public returns(address[]){
+        return origTransAccounts;
+    }
+    
+    function getSingleOriginTrans(address _address) view public returns (uint) {
+         return origTransAccounts[_address].hercId;
+    }
+    
+    function countOriginTrans() view public returns (uint) {
+        return origTransAccounts.length;
+    }
 
 
 
 
-    // function _getAsset(uint id) public constant returns(uint, string, string) {
-    //     return (assets[id].id, assets[id].name, assets[id].manufacturer);
+
+    function getAllRecipientTrans() view public returns(address[]){
+        return recipTransAccounts;
+    }
+    
+    function getSingleRecipientTrans(address _address) view public returns (uint) {
+         return recipTransAccounts[_address].hercId;
+    }
+    
+    function countRecipientTrans() view public returns (uint) {
+        return recipTransAccounts.length;
+    }
+
+
+// Function structs and mappings for getting the validated transactions from the HIPR smart Contracts
+
+    mapping (address => ValidatedTransaction) validatedTransAdresses;
+    address[] public validatedTransAccounts;
+    
+    struct ValidatedTransaction {
+        // address recipAddress;
+        string origOrgName;
+        string recipOrgName;
+        uint hercId;
+        uint origTransFctHash;
+        uint recipTransFctHash;
+    }
+
+
+// unsure about what entity should commit the validated transactions
+function addValidatedTransaction(
+     
+        string _origOrgName,
+        string _recipOrgName,
+        uint _hercId,
+        uint _origTransFctHash,
+        uint _recipTransFctHash
+    
+    ) public
+    {
+        ValidatedTransaction storage validatedTransaction = validatedTransAdresses[_address];
+        
+        validatedTransaction.origOrgName = _origOrgName;
+        validatedTransaction.recipOrgName = _recipOrgName;
+        validatedTransaction.hercId = _hercId;
+        validatedTransaction.origTransFctHash = _origTransFctHash;
+        validatedTransaction.recipTransFctHash = _recipTransFctHash;
+        
+        // validatedTransactionAdresses[_address] = validatedTransaction;
+        validatedTransactionAccounts.push(_address);
+        // transfer(hercContract, _transCost);
+    }
+    }
+
+
+    function getAllValidatedTrans() view public returns(address[]){
+        return validatedTransAccounts;
+    }
+    
+    function getSingleValidatedTrans(address _address) view public returns (uint) {
+         return recipTransAdresses[_address].hercId;
+    }
+    
+    function countValidatedTrans() view public returns (uint) {
+        return recipTransAccounts.length;
+    }
+
+
+
+
+    // FOR CHANGES
+    // function setTo(address _hercContract) public {
+    //     hercContract = _hercContract;
     // }
-
-    //  struct Transaction {
-    //     // perhaps implement lat and long in addition or instead of strings
-    //     uint transactionId;    
-    //     address to;    
-    //     string origin;
-    //     string destination;
-    //     uint startDate;
-    //     bool error;
-
+     
+     // FOR CHANGES
+    // function setNewAssetFee(uint _newAssetFee) public {
+    //     newAssetFee = _newAssetFee;
     // }
     
-    // function _startTransaction(
-       
-    //     address _to,
-    //     string _origin,
-    //     string _destination,
-    //     uint _startDate,
-    //     bool _error
-    //     )
-    // public
-    // isRecipient(_to) {   
-    //     uint _transId = ownerTransactionCount[msg.sender]++;
-    //     transactions[_transId] = (Transaction(_transId, _to, _origin, _destination, _startDate, _error));
-    //     transactionOwners[_transId] = msg.sender;
-        
-        
-    //     emit NewTransactionCreated(_transId, _origin, _destination);
+    // FOR CHANGES
+    // function setViewerFee(uint _viewerFee) public {
+    //     viewerFee = _viewerFee;
     // }
 
-    // function _getTransaction(uint id) public constant  returns(uint, string, string, uint){
-    //     return (transactions[id].transactionId, transactions[id].origin, transactions[id].destination, transactions[id].startDate);
-    // }
-
-
+    
+   
+    
+    
 
 }
