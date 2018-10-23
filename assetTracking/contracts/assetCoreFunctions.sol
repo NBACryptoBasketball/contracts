@@ -87,7 +87,7 @@ contract AssetCoreFunction is Ownable, HERCToken {
 
     function newOrigTrans(address _address, uint _transCost, uint _hercId, uint _fctHash, string _orgName) onlyOwner validValue public payable {
         OrigTrans storage origTrans = origTransAdresses[_address];
-        origTrans.orgName   
+        origTrans.orgName;   
         origTrans.hercId = _hercId;
         origTrans.fctHash = fctHash;
         origTransAccounts[_addres] = origTrans;
@@ -198,7 +198,7 @@ function addValidatedTransaction(
         validatedTransactionAccounts.push(_address);
         // transfer(hercContract, _transCost);
     }
-    }
+    
 
 
     function getAllValidatedTrans() view public returns(address[]){
