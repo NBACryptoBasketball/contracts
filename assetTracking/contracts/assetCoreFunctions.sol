@@ -29,7 +29,7 @@ contract AssetCoreFunction is Ownable, HERCToken {
    
     address public user = msg.sender;
    
-    uint newAssetFee = 10000;
+    uint newAssetFee = 1000;
     uint viewerFee = 0x20; 
     // uint transactionFee; 
     
