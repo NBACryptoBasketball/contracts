@@ -1,4 +1,7 @@
 # [H]ERC777 : The Human Protocol 
+
+# AS OF 10/29/2018 HERCULES SEZC WILL NOT BE LAUNCHING ON THE 777 STANDARD 
+`in an emergency pivot we have decided to rely on the ERC20 Standard we know and love. This will ensure the security and stability of our token moving forward as better scientists iron out the details of the 777 Standard`
  
 
 (H)ERC777 is a new supply chain token standard that relies on ERC820 (Contract pseudo-introspection registry)
