@@ -1,6 +1,6 @@
 # Helping Eradicate Racketeering & Collusion
 
-# Asset Verification Contract Used in [HIPR](https://github.com/hercone/hipr)
+# Asset Validation Contract Used in [HIPR](https://github.com/hercone/hipr)
 
 
 HERC Protocol Software Access Tokens are utlized as a throughput for Interopertable Blockchain Usage.
@@ -18,6 +18,12 @@ Join the [![Discord](https://img.shields.io/discord/102860784329052160.svg)](htt
 
  * [HERC.ONE](https://herc.one)
  * [Whitepaper](https://github.com/hercone/whitepaper)
+
+## Contracts: 
+> - assetValidation.sol: 
+> - MainNet : https://etherscan.io/address/0xeed0eb7a4251ce217b7d37d370267735626ad2ce
+> - playerScore.sol
+> - MainNet :  https://etherscan.io/address/0xeed0eb7a4251ce217b7d37d370267735626ad2c6
  
 ## Getting Started:
 
