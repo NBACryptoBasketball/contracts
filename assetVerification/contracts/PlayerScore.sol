@@ -1,7 +1,9 @@
-pragma solidity ^0.4.21;
+pragma solidity 0.4.24;
+
+import "./base/Ownable.sol";
 
 // A contract to manage players' top scores.
-contract PlayerScore
+contract PlayerScore is Ownable
 {
     // Represents the maximum amount of
     // stored top scores.
@@ -81,4 +83,4 @@ contract PlayerScore
     {
         return TopScores.length;
     }
-} 
+}

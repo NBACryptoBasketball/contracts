@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity 0.4.24;
 
 import "./base/Ownable.sol";
 
@@ -20,6 +20,11 @@ contract PuzzleManager is Ownable
         bytes32 OriginalHash;
         // The map of stored hashed metrics associated to this puzzle.
         mapping(address => bytes32) Hashes;
+        // Secure metrics
+        bool secure;
+        // Created by owner. 
+        // todo: remove that flag if not required by 3rd party puzzle generation. possible collisions 
+        bool createdByOwner;
     }
 
     // Internal generated puzzles.
@@ -28,22 +33,100 @@ contract PuzzleManager is Ownable
     // The next available id.
     uint m_currentId = 0;
 
-    constructor() {
-    }
+    // banlist
+
+    mapping(address => bool) banList;
+
+    // Events
+    event PuzzleCreated(uint puzzleId, string uniqueId);
+
+    // X.1 SECURE PUZZLE [
 
     /// <summary>
-    /// Creates a new puzzle with given metrics.
+    /// Creates a new secure puzzle with given metrics.
     /// </summary>
-    function CreatePuzzle(string metrics) public returns(uint)
+    
+    function CreateSecurePuzzle(address addr, string plainTextMetrics, bytes32 metricsHash, bool checkOwner, string uniqueId) public returns(uint)
     {
+        if (banList[addr]) {
+            revert("cheater is banned"); 
+        }
+
+        if (checkOwner)
+            require(msg.sender == owner, "check owner fail");
+            
         // Instantiate the new puzzle in memory.
-        Puzzle memory puzzle = Puzzle(m_currentId, msg.sender, metrics, keccak256(bytes(metrics)));
+        Puzzle memory puzzle = Puzzle(m_currentId, addr, plainTextMetrics, metricsHash, true, checkOwner);
 
         // Increment the current id for the next puzzle.
         m_currentId = m_currentId + 1;
 
         // Store the new generated puzzle.
         m_puzzles[puzzle.Id] = puzzle;
+
+        emit PuzzleCreated(puzzle.Id, uniqueId);
+
+        return puzzle.Id;
+    }
+
+    /// <summary>
+    /// Pushes secure metrics for the given puzzle.
+    /// </summary>
+    function PushSecureMetrics(uint puzzleId, bytes32 metricsHash) public returns(bool)
+    {
+        if (banList[msg.sender]) {
+            revert("cheater is banned"); 
+        }
+
+        require(m_puzzles[puzzleId].secure, "puzzle is not secure");
+
+        m_puzzles[puzzleId].Hashes[msg.sender] = metricsHash;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Compares the metrics associated to this address to the
+    /// original metrics, for the given puzzle id.
+    /// </summary>
+    function CompareSecureMetrics(uint puzzleId, bool byOwner) public view returns(bool)
+    {
+        Puzzle storage puzzle = m_puzzles[puzzleId];
+
+        require(m_puzzles[puzzleId].secure, "puzzle is not secure");
+
+        require(m_puzzles[puzzleId].createdByOwner == byOwner, "puzzle invalid owner");
+
+        if (puzzle.OriginalHash == puzzle.Hashes[msg.sender])
+        {
+            return true;
+        }
+        return false;
+    }
+
+    // X.1 SECURE PUZZLE ]
+    // X.2 UNSECURE PUZZLE [
+
+    /// <summary>
+    /// Creates a new puzzle with given metrics.
+    /// </summary>
+    
+    function CreatePuzzle(string metrics, string uniqueId) public returns(uint)
+    {
+        if (banList[msg.sender]) {
+            revert("cheater is banned"); 
+        }
+            
+        // Instantiate the new puzzle in memory.
+        Puzzle memory puzzle = Puzzle(m_currentId, msg.sender, metrics, keccak256(bytes(metrics)), false, false);
+
+        // Increment the current id for the next puzzle.
+        m_currentId = m_currentId + 1;
+
+        // Store the new generated puzzle.
+        m_puzzles[puzzle.Id] = puzzle;
+
+        emit PuzzleCreated(puzzle.Id, uniqueId);
 
         return puzzle.Id;
     }
@@ -53,6 +136,10 @@ contract PuzzleManager is Ownable
     /// </summary>
     function PushMetrics(uint puzzleId, string metrics) public returns(bool)
     {
+        if (banList[msg.sender]) {
+            revert("cheater is banned"); 
+        }
+
         m_puzzles[puzzleId].Hashes[msg.sender] = keccak256(bytes(metrics));
 
         return true;
@@ -80,6 +167,8 @@ contract PuzzleManager is Ownable
     {
         return m_puzzles[puzzleId].OriginalMetrics;
     }
+
+    // X.2 UNSECURE PUZZLE ]
 
     /// <summary>
     /// Returns the hashed metrics associated to a given puzzle id.
@@ -112,16 +201,27 @@ contract PuzzleManager is Ownable
         return result;
     }
 
+    // BAN LOGIC [
+    
     /// <summary>
-    /// Accept puzzle
+    /// Ban address
     /// </summary>
-
-    function acceptPuzzle() 
+    function ban(address user)
         public
         onlyOwner
     {
-        
+        banList[user] = true;
     }
-}
 
- 
+    /// <summary>
+    /// Ban address
+    /// </summary>
+    function unban(address user)
+        public
+        onlyOwner
+    {
+        banList[user] = false;
+    }
+
+    // BAN LOGIC ]
+}

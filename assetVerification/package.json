@@ -29,11 +29,14 @@
     "babel-preset-stage-2": "6.24.1",
     "babel-preset-stage-3": "6.24.1",
     "babel-register": "6.26.0",
+    "devenv": "^1.0.1",
+    "dotenv": "^6.1.0",
     "ethereumjs-testrpc": "4.1.1",
-    "truffle": "4.0.1"
+    "truffle": "4.0.1",
+    "truffle-hdwallet-provider": "0.0.6",
+    "web3": "^1.0.0-beta.36"
   },
   "devDependencies": {
     "sol-merger": "0.1.2"
   }
 }
- 
