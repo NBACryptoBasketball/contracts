@@ -45,7 +45,9 @@ module.exports = {
     useColors: true,
   },
   solc: {
-    optimizer: {
+      version: "0.4.25",  
+//        docker: true,
+      optimizer: {
       enabled: true,
       runs: 200,
     },

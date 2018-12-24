@@ -1,8 +1,9 @@
 pragma solidity 0.4.24;
+//pragma solidity ^0.4.25;
 
-import "./base/Ownable.sol";
+//import "./base/Ownable.sol";
 
-import "./herc/HERCToken.sol";
+import "./herc/herc20.sol";
 
 // A contract to manage players' top scores.
 contract PlayerScore is Ownable
@@ -100,32 +101,61 @@ contract PlayerScore is Ownable
 
     // CONFIGURE PAYOUTS [
 
-    address _hercContract;
-    address _payoutBoss;
-    uint[m_maxScores] _winnerReward;
+    address public hercContract;
+    address public payoutBoss;
+    uint[m_maxScores] public winnerReward;
 
-    function SetHERCTokenAddress(address hercContract)
+    function SetHERCTokenAddress(address hercContract_)
         public
         onlyOwner
     {
-        _hercContract = hercContract;
+        hercContract = hercContract_;
     }
 
     function SetPayoutAddress(address boss)
         public
         onlyOwner
     {
-        _payoutBoss = boss;
+        payoutBoss = boss;
     }
 
-    function SetWinnerReward(rank, reward)
+    function SetWinnerReward(uint rank, uint reward)
         public
         onlyOwner
     {
-        _winnerReward[rank] = reward;
+        winnerReward[rank] = reward;
     }
 
     // CONFIGURE PAYOUTS ]
+    // SEASON DATE [
+
+    uint public startDate;
+    uint public releaseDate;
+    uint public seasonInterval;
+
+    function SetNextSeasonReleaseDate(uint startDate_, uint releaseDate_)
+        public
+        onlyOwner
+    {
+        startDate = startDate_;
+        releaseDate = releaseDate_;
+    }
+
+    function SetSeasonInterval(uint interval)
+        public
+        onlyOwner
+    {
+        seasonInterval = interval;
+    }
+
+    function IsSeasonOver()
+        public
+        returns(bool)
+    {
+        return (now >= releaseDate);
+    }
+
+    // SEASON DATE ]
     // SEASON PAYOUT [
 
     function PayoutToWinners()
@@ -135,14 +165,18 @@ contract PlayerScore is Ownable
         require (IsSeasonOver(), "Season in progress");
 
         // update season
-        SetNextSeasonReleaseDate(_releaseDate + _seasonInterval);
+        SetNextSeasonReleaseDate(releaseDate, releaseDate + seasonInterval);
 
         // move scores to memory for sort and progress
-        Score[] memory scores;
         uint count = GetTopScoresCount();
-        for (uint i = 0; i < count; i++) {
-            Score score = TopScores[i];
-            scores.push(score);
+
+        Score[] memory scores = new Score[](count);
+
+        uint i;
+        for (i = 0; i < count; i++) {
+            Score memory score = TopScores[i];
+            //scores.push(score);
+            scores[i] = score;
         }
         
         sortScores(scores);
@@ -150,22 +184,22 @@ contract PlayerScore is Ownable
         // clean up scores for prevet double spent
         WipeScores();
 
-        for (uint i = 0; i < count; i++) {
+        for (i = 0; i < count; i++) {
             payoutScore(scores[i].player, i);
         }
     }
 
-    event WinnerPayout(player, rank, reward);
+    event WinnerPayout(address player, uint rank, uint reward);
 
     function payoutScore(address player, uint rank)
         internal
-        onlyOnwer
+        onlyOwner
     {
-        uint reward = _winnerReward[rank];
+        uint reward = winnerReward[rank];
 
-        HERCToken(_hercContract).approve(_payoutBoss, reward);
+        HERCToken(hercContract).approve(payoutBoss, reward);
 
-        ERC20(tracker_0x_address).transferFrom(_payoutBoss, player, reward);
+        HERCToken(hercContract).transferFrom(payoutBoss, player, reward);
 
         emit WinnerPayout(player, rank, reward);
     }
@@ -178,41 +212,16 @@ contract PlayerScore is Ownable
     }
 
     // SEASON PAYOUT ]
-    // SEASON DATE [
-
-    uint _releaseDate;
-    uint _seasonInterval;
-
-    function SetNextSeasonReleaseDate(uint date)
-        public
-        onlyOwner
-    {
-        _releaseDate = date;
-    }
-
-    function SetSeasonInterval(uint interval)
-        public
-        onlyOwner
-    {
-        _seasonInterval = interval;
-    }
-
-    function IsSeasonOver()
-        public
-    {
-        return (now >= _releaseDate);
-    }
-
-    // SEASON DATE ]
     // UTILS [
 
     function sortScores(Score[] memory scores)
         internal
     {
+        uint l = scores.length;
         for(uint i = 0; i < l; i++) {
             for(uint j = i+1; j < l ;j++) {
-                if(scores[i] > scores[j]) {
-                    Score temp = scores[i];
+                if(scores[i].score > scores[j].score) {
+                    Score memory temp = scores[i];
                     scores[i] = scores[j];
                     scores[j] = temp;
                 }
