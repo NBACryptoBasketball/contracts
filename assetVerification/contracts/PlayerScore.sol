@@ -86,6 +86,12 @@ contract PlayerScore is Ownable
     {
         return TopScores.length;
     }
+
+    function GetTopScoresMax() view public returns (uint)
+    {
+        return m_maxScores;
+    }
+
     // SECURE [
 
     function SetScoreSecure() 
@@ -107,21 +113,21 @@ contract PlayerScore is Ownable
 
     function SetHERCTokenAddress(address hercContract_)
         public
-        onlyOwner
+//        onlyOwner
     {
         hercContract = hercContract_;
     }
 
     function SetPayoutAddress(address boss)
         public
-        onlyOwner
+//        onlyOwner
     {
         payoutBoss = boss;
     }
 
     function SetWinnerReward(uint rank, uint reward)
         public
-        onlyOwner
+//        onlyOwner
     {
         winnerReward[rank] = reward;
     }
@@ -131,11 +137,12 @@ contract PlayerScore is Ownable
 
     uint public startDate;
     uint public releaseDate;
-    uint public seasonInterval;
+    uint public seasonInterval=9;
+    uint public lastWipeDate=9;
 
     function SetNextSeasonReleaseDate(uint startDate_, uint releaseDate_)
         public
-        onlyOwner
+//        onlyOwner
     {
         startDate = startDate_;
         releaseDate = releaseDate_;
@@ -143,9 +150,10 @@ contract PlayerScore is Ownable
 
     function SetSeasonInterval(uint interval)
         public
-        onlyOwner
+//        onlyOwner
     {
         seasonInterval = interval;
+//        lastWipeDate = interval;
     }
 
     function IsSeasonOver()
@@ -160,7 +168,7 @@ contract PlayerScore is Ownable
 
     function PayoutToWinners()
         public
-        onlyOwner
+//        onlyOwner
     {
         require (IsSeasonOver(), "Season in progress");
 
@@ -182,7 +190,7 @@ contract PlayerScore is Ownable
         sortScores(scores);
 
         // clean up scores for prevet double spent
-        WipeScores();
+        //WipeScores();
 
         for (i = 0; i < count; i++) {
             payoutScore(scores[i].player, i);
@@ -193,7 +201,7 @@ contract PlayerScore is Ownable
 
     function payoutScore(address player, uint rank)
         internal
-        onlyOwner
+//        onlyOwner
     {
         uint reward = winnerReward[rank];
 
@@ -206,8 +214,9 @@ contract PlayerScore is Ownable
 
     function WipeScores()
         public
-        onlyOwner
+//        onlyOwner
     {
+        lastWipeDate = now;
         TopScores.length = 0;
     }
 
