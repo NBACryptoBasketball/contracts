@@ -10,7 +10,7 @@ contract PlayerScore is Ownable
 {
     // Represents the maximum amount of
     // stored top scores.
-    uint constant m_maxScores = 50;
+    uint constant m_maxScores = 100;
     
     // Represents the player-score entry.
     struct Score
@@ -18,6 +18,8 @@ contract PlayerScore is Ownable
         address player;
         int score;
     }
+
+    // WARNING! UNSECURE OLD NOT USED - todo: review, cleanup & remove [
     
     /// <summary>
     /// Most relevant scores stored in this contract.
@@ -87,6 +89,8 @@ contract PlayerScore is Ownable
         return TopScores.length;
     }
 
+    // WARNING! UNSECURE OLD NOT USED - todo: review, cleanup & remove ]
+
     function GetTopScoresMax() view public returns (uint)
     {
         return m_maxScores;
@@ -94,11 +98,64 @@ contract PlayerScore is Ownable
 
     // SECURE [
 
-    function SetScoreSecure() 
+    uint TopScoresSecureCount = 0;
+
+    Score[] public TopScoresSecure;
+
+    function GetTopScoresSecureCount() view public returns (uint)
+    {
+        return TopScoresSecureCount;
+    }
+
+    function SetScoreSecure(address player, int score) 
         public
         onlyOwner
     {
-        // todo: review requirements
+        int currentScore = Scores[player];
+        
+        // Replace the old score with the new one
+        // if it is higher.
+        if(currentScore < score)
+        {
+            Scores[player] = score;
+        }
+        
+        // Now we populate the top scores array.
+        if(TopScoresSecureCount < m_maxScores)
+        {
+            // If we didn't reach yet the maximum stored
+            // scores amount, we simply add the new entry.
+            Score memory newScore = Score(player, score);
+            TopScoresSecure.push(newScore);
+            TopScoresSecureCount++;
+        }
+        else
+        {
+            // If we reached the maximum stored scores amount,
+            // we have to verify if the new received score is
+            // higher than the lowest one in the top scores array.
+            int lowestScore = TopScoresSecure[0].score;
+            uint lowestScoreIndex = 0;
+            
+            // We search for the lowest stored score.
+            for(uint i = 1; i < TopScoresSecureCount; i++)
+            {
+                Score memory current = TopScoresSecure[i];
+                if(lowestScore > current.score)
+                {
+                    lowestScore = current.score;
+                    lowestScoreIndex = i;
+                }
+            }
+            
+            // Now we can check our new pushed score against
+            // the lowest one.
+            if(lowestScore < score)
+            {
+                Score memory newScoreToReplace = Score(player, score);
+                TopScoresSecure[lowestScoreIndex] = newScoreToReplace;
+            }
+        }
     }
 
     // SECURE ]
@@ -113,21 +170,21 @@ contract PlayerScore is Ownable
 
     function SetHERCTokenAddress(address hercContract_)
         public
-//        onlyOwner
+        onlyOwner
     {
         hercContract = hercContract_;
     }
 
     function SetPayoutAddress(address boss)
         public
-//        onlyOwner
+        onlyOwner
     {
         payoutBoss = boss;
     }
 
     function SetWinnerReward(uint rank, uint reward)
         public
-//        onlyOwner
+        onlyOwner
     {
         winnerReward[rank] = reward;
     }
@@ -142,7 +199,7 @@ contract PlayerScore is Ownable
 
     function SetNextSeasonReleaseDate(uint startDate_, uint releaseDate_)
         public
-//        onlyOwner
+        onlyOwner
     {
         startDate = startDate_;
         releaseDate = releaseDate_;
@@ -150,7 +207,7 @@ contract PlayerScore is Ownable
 
     function SetSeasonInterval(uint interval)
         public
-//        onlyOwner
+        onlyOwner
     {
         seasonInterval = interval;
 //        lastWipeDate = interval;
@@ -158,6 +215,7 @@ contract PlayerScore is Ownable
 
     function IsSeasonOver()
         public
+        view
         returns(bool)
     {
         return (now >= releaseDate);
@@ -168,7 +226,7 @@ contract PlayerScore is Ownable
 
     function PayoutToWinners()
         public
-//        onlyOwner
+        onlyOwner
     {
         require (IsSeasonOver(), "Season in progress");
 
@@ -176,13 +234,13 @@ contract PlayerScore is Ownable
         SetNextSeasonReleaseDate(releaseDate, releaseDate + seasonInterval);
 
         // move scores to memory for sort and progress
-        uint count = GetTopScoresCount();
+        uint count = GetTopScoresSecureCount();
 
         Score[] memory scores = new Score[](count);
 
         uint i;
         for (i = 0; i < count; i++) {
-            Score memory score = TopScores[i];
+            Score memory score = TopScoresSecure[i];
             //scores.push(score);
             scores[i] = score;
         }
@@ -201,23 +259,25 @@ contract PlayerScore is Ownable
 
     function payoutScore(address player, uint rank)
         internal
-//        onlyOwner
+        onlyOwner
     {
         uint reward = winnerReward[rank];
 
-        HERCToken(hercContract).approve(payoutBoss, reward);
+        HERCToken(hercContract).approve(player, reward);
+//        HERCToken(hercContract).approve(payoutBoss, reward);
 
-        HERCToken(hercContract).transferFrom(payoutBoss, player, reward);
+//        HERCToken(hercContract).transferFrom(payoutBoss, player, reward);
 
         emit WinnerPayout(player, rank, reward);
     }
 
     function WipeScores()
         public
-//        onlyOwner
+        onlyOwner
     {
         lastWipeDate = now;
-        TopScores.length = 0;
+//        TopScores.length = 0;
+        TopScoresSecureCount = 0;
     }
 
     // SEASON PAYOUT ]

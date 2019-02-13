@@ -3,12 +3,17 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 
 const web3 = require('web3');
 
-const mainnetUrl = `https://mainnet.infura.io/${process.env.INFURA}`;
-const ropstenUrl = `https://ropsten.infura.io/${process.env.INFURA}`;
+//const mainnetUrl = `https://mainnet.infura.io/${process.env.INFURA}`;
+//const ropstenUrl = `https://ropsten.infura.io/${process.env.INFURA}`;
+const mainnetUrl = 'https://eth-mainnet.alchemyapi.io/jsonrpc/DCuuSowPM6WbBCkzVfyl8VRYEIjNh9L8'
+//const mainnetUrl = 'https://eth-mainnet.alchemyapi.io/jsonrpc/9JkIkMa6aBj4U0vdffA-bXTfl6rS6TMz'
+const ropstenUrl = 'https://eth-ropsten.alchemyapi.io/jsonrpc/9JkIkMa6aBj4U0vdffA-bXTfl6rS6TMz'
 
 console.log('process.env.MNEMONIC', process.env.MNEMONIC)
 console.log('mainnetUrl', mainnetUrl)
 console.log('ropstenUrl', ropstenUrl)
+
+var _providerLogged
 
 module.exports = {
   networks: {
@@ -22,11 +27,16 @@ module.exports = {
     ganache: {
       host: "127.0.0.1",
       port: 7545,
-      network_id: "*"
+      network_id: "*",
     },
     ropsten: {
       provider() {
-        return new HDWalletProvider(process.env.MNEMONIC, ropstenUrl, 0);
+        var provider = new HDWalletProvider(process.env.MNEMONIC, ropstenUrl, 0);
+        if (!_providerLogged) {
+          _providerLogged = true
+          console.log('deploy_account:', provider.addresses[0])
+        }
+        return provider
       },
       network_id: 3,
       gasPrice: web3.utils.toWei('50', 'gwei'),
