@@ -168,6 +168,12 @@ contract PuzzleManager is Ownable
         return m_puzzles[puzzleId].OriginalMetrics;
     }
 
+    function ValidateMetrics(uint puzzleId, string metrics) public returns(bool)
+    {
+        PushMetrics(puzzleId, metrics);
+        return CompareMetrics(puzzleId);
+    }
+
     // X.2 UNSECURE PUZZLE ]
 
     /// <summary>

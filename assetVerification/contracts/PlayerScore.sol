@@ -158,6 +158,142 @@ contract PlayerScore is Ownable
         }
     }
 
+    function uintToString(uint v) public returns (string)
+    {
+        uint maxlength = 100;
+        bytes memory reversed = new bytes(maxlength);
+        uint i = 0;
+        while (v != 0) {
+            uint remainder = v % 10;
+            v = v / 10;
+            reversed[i++] = byte(48 + remainder);
+        }
+        bytes memory s = new bytes(i + 1);
+        for (uint j = 0; j <= i; j++) {
+            s[j] = reversed[i - j];
+        }
+        return string(s);
+    }
+
+    function addressToString(address x) public returns (string) 
+    {
+        bytes memory b = new bytes(20);
+        for (uint i = 0; i < 20; i++)
+            b[i] = byte(uint8(uint(x) / (2**(8*(19 - i)))));
+        return string(b);
+    }
+
+    function debugS1(address player) public returns (string) {
+        string memory s1 = addressToString(player);
+        return s1;
+    }
+
+    function debugS2(uint score) public returns (string) {
+        string memory s2 = uintToString(score);
+        return s2;
+    }
+
+    function debugS3(string s1, string s2, string metrics) public returns (string) {
+        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
+        return smsg;
+    }
+
+    function verifySign(string smsg, uint8 v, bytes32 r, bytes32 s) public returns (address) {
+        bytes32 h = keccak256(bytes(smsg));
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+//        bytes32 prefixedHash = keccak256(prefix, h);
+//        bytes32 prefixedHash = sign(keccak256("\x19Ethereum Signed Message:\n" + len(smsg) + smsg));
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, h));
+        address addr = ecrecover(prefixedHash, v, r, s);        
+        return addr;
+    }
+
+    function SetScoreSecureSign(address player, int score, string metrics, uint8 v, bytes32 r, bytes32 s) 
+        public
+    {
+//        address player = msg.sender;
+
+        // Make string [
+        // format: 0xPLAYER SCORE METRICS
+/*
+        string memory s1 = addressToString(player);
+        string memory s2 = uintToString(uint(score));
+//        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
+        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
+
+        address addr = verifySign(smsg, v, r, s);*/
+/*
+        bytes32 h = keccak256(bytes(smsg));
+
+        // Make string [
+        // Verify signature [
+
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+
+//        bytes32 prefixedHash = sha3(prefix, h);
+//        bytes32 prefixedHash = sign(keccak256("\x19Ethereum Signed Message:\n" + len(smsg) + smsg));
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, h));
+
+        address addr = ecrecover(prefixedHash, v, r, s);
+*/
+/*
+        require(addr == owner(), "check signature fail");
+
+        // Verify signature ]
+
+        SetScoreSecureSignInternal(player, score);
+        */
+    }
+
+    function SetScoreSecureSignInternal(address player, int score) 
+        internal
+    {
+        int currentScore = Scores[player];
+        
+        // Replace the old score with the new one
+        // if it is higher.
+        if(currentScore < score)
+        {
+            Scores[player] = score;
+        }
+        
+        // Now we populate the top scores array.
+        if(TopScoresSecureCount < m_maxScores)
+        {
+            // If we didn't reach yet the maximum stored
+            // scores amount, we simply add the new entry.
+            Score memory newScore = Score(player, score);
+            TopScoresSecure.push(newScore);
+            TopScoresSecureCount++;
+        }
+        else
+        {
+            // If we reached the maximum stored scores amount,
+            // we have to verify if the new received score is
+            // higher than the lowest one in the top scores array.
+            int lowestScore = TopScoresSecure[0].score;
+            uint lowestScoreIndex = 0;
+            
+            // We search for the lowest stored score.
+            for(uint i = 1; i < TopScoresSecureCount; i++)
+            {
+                Score memory current = TopScoresSecure[i];
+                if(lowestScore > current.score)
+                {
+                    lowestScore = current.score;
+                    lowestScoreIndex = i;
+                }
+            }
+            
+            // Now we can check our new pushed score against
+            // the lowest one.
+            if(lowestScore < score)
+            {
+                Score memory newScoreToReplace = Score(player, score);
+                TopScoresSecure[lowestScoreIndex] = newScoreToReplace;
+            }
+        }
+    }
     // SECURE ]
 
     // PAYOUT LOGIC [
