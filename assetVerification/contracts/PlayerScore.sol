@@ -157,8 +157,8 @@ contract PlayerScore is Ownable
             }
         }
     }
-
-    function uintToString(uint v) public returns (string)
+/*
+    function uintToString(uint v) public view returns (string)
     {
         uint maxlength = 100;
         bytes memory reversed = new bytes(maxlength);
@@ -174,31 +174,92 @@ contract PlayerScore is Ownable
         }
         return string(s);
     }
+*/
 
-    function addressToString(address x) public returns (string) 
+    // 0.5 Compiler Version:
+/*
+    function uintToString(uint _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len - 1;
+        while (_i != 0) {
+            bstr[k--] = byte(uint8(48 + _i % 10));
+            _i /= 10;
+        }
+        return string(bstr);
+    }
+*/
+    //Pre 0.5 Compiler Version:
+
+    function uintToString(uint i) internal view returns (string)
     {
-        bytes memory b = new bytes(20);
-        for (uint i = 0; i < 20; i++)
-            b[i] = byte(uint8(uint(x) / (2**(8*(19 - i)))));
-        return string(b);
+        if (i == 0) return "0";
+        uint j = i;
+        uint length;
+        while (j != 0){
+            length++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(length);
+        uint k = length - 1;
+        while (i != 0){
+            bstr[k--] = byte(48 + i % 10);
+            i /= 10;
+        }
+        return string(bstr);
     }
 
-    function debugS1(address player) public returns (string) {
+    function addressToString(address _addr) public view returns(string) {
+        bytes32 value = bytes32(uint256(_addr));
+        bytes memory alphabet = "0123456789abcdef";
+
+        bytes memory str = new bytes(42);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint i = 0; i < 20; i++) {
+            str[2+i*2] = alphabet[uint(value[i + 12] >> 4)];
+            str[3+i*2] = alphabet[uint(value[i + 12] & 0x0f)];
+        }
+        return string(str);
+    }
+/*
+    function debugS1(address player) public view returns (string) {
         string memory s1 = addressToString(player);
         return s1;
     }
 
-    function debugS2(uint score) public returns (string) {
+    function debugS2(uint score) public view returns (string) {
         string memory s2 = uintToString(score);
         return s2;
     }
 
-    function debugS3(string s1, string s2, string metrics) public returns (string) {
+    function debugS3(string s1, string s2, string metrics) view public returns (string) {
         string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
         return smsg;
     }
 
-    function verifySign(string smsg, uint8 v, bytes32 r, bytes32 s) public returns (address) {
+    function debugS4(string s1, string s2, string metrics) view public returns (bytes32) {
+        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
+        bytes32 h = keccak256(bytes(smsg));
+        return h;
+    }
+    function debugS5(string s1, string s2, string metrics) view public returns (bytes32) {
+        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
+        bytes32 h = keccak256(bytes(smsg));
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, h));
+        return prefixedHash;
+    }
+*/
+    function verifySign(string smsg, uint8 v, bytes32 r, bytes32 s) public view returns (address) {
         bytes32 h = keccak256(bytes(smsg));
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
 //        bytes32 prefixedHash = keccak256(prefix, h);
@@ -207,7 +268,25 @@ contract PlayerScore is Ownable
         address addr = ecrecover(prefixedHash, v, r, s);        
         return addr;
     }
+/*
+    function verifySignH(bytes32 h, uint8 v, bytes32 r, bytes32 s) public view returns (address) {
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, h));
+        address addr = ecrecover(prefixedHash, v, r, s);
+        return addr;
+    }
 
+    function verifySignNoPrefix(string smsg, uint8 v, bytes32 r, bytes32 s) public view returns (address) {
+        bytes32 h = keccak256(bytes(smsg));
+        address addr = ecrecover(h, v, r, s);
+        return addr;
+    }
+
+    function verifySignNoPrefixH(bytes32 h, uint8 v, bytes32 r, bytes32 s) public view returns (address) {
+        address addr = ecrecover(h, v, r, s);
+        return addr;
+    }
+*/
     function SetScoreSecureSign(address player, int score, string metrics, uint8 v, bytes32 r, bytes32 s) 
         public
     {
@@ -215,13 +294,13 @@ contract PlayerScore is Ownable
 
         // Make string [
         // format: 0xPLAYER SCORE METRICS
-/*
+
         string memory s1 = addressToString(player);
         string memory s2 = uintToString(uint(score));
 //        string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
         string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
 
-        address addr = verifySign(smsg, v, r, s);*/
+        address addr = verifySign(smsg, v, r, s);
 /*
         bytes32 h = keccak256(bytes(smsg));
 
@@ -236,13 +315,12 @@ contract PlayerScore is Ownable
 
         address addr = ecrecover(prefixedHash, v, r, s);
 */
-/*
+
         require(addr == owner(), "check signature fail");
 
         // Verify signature ]
 
         SetScoreSecureSignInternal(player, score);
-        */
     }
 
     function SetScoreSecureSignInternal(address player, int score) 
