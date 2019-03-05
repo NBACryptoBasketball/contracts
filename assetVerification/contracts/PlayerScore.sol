@@ -98,6 +98,7 @@ contract PlayerScore is Ownable
 
     // SECURE [
 
+    uint BaseIndexSecure = 0;
     uint TopScoresSecureCount = 0;
 
     Score[] public TopScoresSecure;
@@ -105,6 +106,10 @@ contract PlayerScore is Ownable
     function GetTopScoresSecureCount() view public returns (uint)
     {
         return TopScoresSecureCount;
+    }
+
+    function getTopScore(uint index) view public returns (int) {
+        return TopScoresSecure[BaseIndexSecure + index].score;
     }
 
     function SetScoreSecure(address player, int score) 
@@ -349,13 +354,13 @@ contract PlayerScore is Ownable
             // If we reached the maximum stored scores amount,
             // we have to verify if the new received score is
             // higher than the lowest one in the top scores array.
-            int lowestScore = TopScoresSecure[0].score;
-            uint lowestScoreIndex = 0;
+            int lowestScore = TopScoresSecure[BaseIndexSecure + 0].score;
+            uint lowestScoreIndex = BaseIndexSecure + 0;
             
             // We search for the lowest stored score.
             for(uint i = 1; i < TopScoresSecureCount; i++)
             {
-                Score memory current = TopScoresSecure[i];
+                Score memory current = TopScoresSecure[BaseIndexSecure + i];
                 if(lowestScore > current.score)
                 {
                     lowestScore = current.score;
@@ -368,7 +373,7 @@ contract PlayerScore is Ownable
             if(lowestScore < score)
             {
                 Score memory newScoreToReplace = Score(player, score);
-                TopScoresSecure[lowestScoreIndex] = newScoreToReplace;
+                TopScoresSecure[BaseIndexSecure + lowestScoreIndex] = newScoreToReplace;
             }
         }
     }
