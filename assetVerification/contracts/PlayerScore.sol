@@ -1,5 +1,6 @@
 pragma solidity 0.4.24;
 //pragma solidity ^0.4.25;
+//pragma experimental ABIEncoderV2;
 
 //import "./base/Ownable.sol";
 
@@ -98,8 +99,8 @@ contract PlayerScore is Ownable
 
     // SECURE [
 
-    uint BaseIndexSecure = 0;
-    uint TopScoresSecureCount = 0;
+    uint private BaseIndexSecure = 0;
+    uint private TopScoresSecureCount = 0;
 
     Score[] public TopScoresSecure;
 
@@ -108,8 +109,13 @@ contract PlayerScore is Ownable
         return TopScoresSecureCount;
     }
 
-    function getTopScore(uint index) view public returns (int) {
+    function getTopPlayerAddress(uint index) view public returns (address) {
+        return TopScoresSecure[BaseIndexSecure + index].player;
+    }
+
+    function getTopPlayerScore(uint index) view public returns (int) {
         return TopScoresSecure[BaseIndexSecure + index].score;
+//        return TopScoresSecure[BaseIndexSecure + index];
     }
 
     function SetScoreSecure(address player, int score) 
@@ -496,6 +502,8 @@ contract PlayerScore is Ownable
     {
         lastWipeDate = now;
 //        TopScores.length = 0;
+//        BaseIndexSecure += TopScoresSecureCount; //TopScoresSecure.length;
+        BaseIndexSecure = TopScoresSecure.length;
         TopScoresSecureCount = 0;
     }
 
