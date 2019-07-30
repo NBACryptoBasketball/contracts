@@ -29,6 +29,8 @@ contract PlayerScore is Ownable
     
     // Maps each player with its own score.
     mapping(address=>int) public Scores;
+
+    mapping(address=>int)[] public Scores1;
     
     /// <summary>
     /// Sets the score for current sender.
@@ -99,59 +101,62 @@ contract PlayerScore is Ownable
 
     // SECURE [
 
-    uint private BaseIndexSecure = 0;
-    uint private TopScoresSecureCount = 0;
+//    uint private BaseIndexSecure = 0;
+//    uint private TopScoresSecureCount = 0;
 
-    Score[] public TopScoresSecure;
+//    Score[] public TopScoresSecure;
 
-    function GetTopScoresSecureCount() view public returns (uint)
+    uint[] private BaseIndexSecure1;
+    uint[] private TopScoresSecureCount1;
+    Score[][] public TopScoresSecure1;
+
+    function GetTopScoresSecureCount(uint gameId) view public returns (uint)
     {
-        return TopScoresSecureCount;
+        return TopScoresSecureCount1[gameId];
     }
 
-    function getTopPlayerAddress(uint index) view public returns (address) {
-        return TopScoresSecure[BaseIndexSecure + index].player;
+    function getTopPlayerAddress(uint gameId, uint index) view public returns (address) {
+        return TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + index].player;
     }
 
-    function getTopPlayerScore(uint index) view public returns (int) {
-        return TopScoresSecure[BaseIndexSecure + index].score;
-//        return TopScoresSecure[BaseIndexSecure + index];
+    function getTopPlayerScore(uint gameId, uint index) view public returns (int) {
+        return TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + index].score;
     }
 
-    function SetScoreSecure(address player, int score) 
+    function SetScoreSecure(uint gameId, address player, int score) 
         public
         onlyOwner
     {
-        int currentScore = Scores[player];
+        int currentScore = Scores1[gameId][player];
         
         // Replace the old score with the new one
         // if it is higher.
         if(currentScore < score)
         {
-            Scores[player] = score;
+            Scores1[gameId][player] = score;
         }
         
         // Now we populate the top scores array.
-        if(TopScoresSecureCount < m_maxScores)
+        if(TopScoresSecureCount1[gameId] < m_maxScores)
         {
             // If we didn't reach yet the maximum stored
             // scores amount, we simply add the new entry.
             Score memory newScore = Score(player, score);
-            TopScoresSecure.push(newScore);
-            TopScoresSecureCount++;
+            TopScoresSecure1[gameId].push(newScore);
+            TopScoresSecureCount1[gameId]++;
         }
         else
         {
             // If we reached the maximum stored scores amount,
             // we have to verify if the new received score is
             // higher than the lowest one in the top scores array.
-            int lowestScore = TopScoresSecure[0].score;
+            int lowestScore = TopScoresSecure1[gameId][0].score;
             uint lowestScoreIndex = 0;
             
             // We search for the lowest stored score.
-            for(uint i = 1; i < TopScoresSecureCount; i++)
+            for(uint i = 1; i < TopScoresSecureCount1[gameId]; i++)
             {
-                Score memory current = TopScoresSecure[i];
+                Score memory current = TopScoresSecure1[gameId][i];
                 if(lowestScore > current.score)
                 {
                     lowestScore = current.score;
@@ -164,7 +169,7 @@ contract PlayerScore is Ownable
             if(lowestScore < score)
             {
                 Score memory newScoreToReplace = Score(player, score);
-                TopScoresSecure[lowestScoreIndex] = newScoreToReplace;
+                TopScoresSecure1[gameId][lowestScoreIndex] = newScoreToReplace;
             }
         }
     }
@@ -298,7 +303,7 @@ contract PlayerScore is Ownable
         return addr;
     }
 */
-    function SetScoreSecureSign(address player, int score, string metrics, uint8 v, bytes32 r, bytes32 s) 
+    function SetScoreSecureSign(uint gameId, address player, int score, string metrics, uint8 v, bytes32 r, bytes32 s) 
         public
     {
 //        address player = msg.sender;
@@ -331,42 +336,42 @@ contract PlayerScore is Ownable
 
         // Verify signature ]
 
-        SetScoreSecureSignInternal(player, score);
+        SetScoreSecureSignInternal(gameId, player, score);
     }
 
-    function SetScoreSecureSignInternal(address player, int score) 
+    function SetScoreSecureSignInternal(uint gameId, address player, int score) 
         internal
     {
-        int currentScore = Scores[player];
+        int currentScore = Scores1[gameId][player];
         
         // Replace the old score with the new one
         // if it is higher.
         if(currentScore < score)
         {
-            Scores[player] = score;
+            Scores1[gameId][player] = score;
         }
         
         // Now we populate the top scores array.
-        if(TopScoresSecureCount < m_maxScores)
+        if(TopScoresSecureCount1[gameId] < m_maxScores)
         {
             // If we didn't reach yet the maximum stored
             // scores amount, we simply add the new entry.
             Score memory newScore = Score(player, score);
-            TopScoresSecure.push(newScore);
-            TopScoresSecureCount++;
+            TopScoresSecure1[gameId].push(newScore);
+            TopScoresSecureCount1[gameId]++;
         }
         else
         {
             // If we reached the maximum stored scores amount,
             // we have to verify if the new received score is
             // higher than the lowest one in the top scores array.
-            int lowestScore = TopScoresSecure[BaseIndexSecure + 0].score;
-            uint lowestScoreIndex = BaseIndexSecure + 0;
+            int lowestScore = TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + 0].score;
+            uint lowestScoreIndex = BaseIndexSecure1[gameId] + 0;
             
             // We search for the lowest stored score.
-            for(uint i = 1; i < TopScoresSecureCount; i++)
+            for(uint i = 1; i < TopScoresSecureCount1[gameId]; i++)
             {
-                Score memory current = TopScoresSecure[BaseIndexSecure + i];
+                Score memory current = TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + i];
                 if(lowestScore > current.score)
                 {
                     lowestScore = current.score;
@@ -379,7 +384,7 @@ contract PlayerScore is Ownable
             if(lowestScore < score)
             {
                 Score memory newScoreToReplace = Score(player, score);
-                TopScoresSecure[BaseIndexSecure + lowestScoreIndex] = newScoreToReplace;
+                TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + lowestScoreIndex] = newScoreToReplace;
             }
         }
     }
@@ -449,7 +454,7 @@ contract PlayerScore is Ownable
     // SEASON DATE ]
     // SEASON PAYOUT [
 
-    function PayoutToWinners()
+    function PayoutToWinners(uint gameId)
         public
         onlyOwner
     {
@@ -459,13 +464,13 @@ contract PlayerScore is Ownable
         SetNextSeasonReleaseDate(releaseDate, releaseDate + seasonInterval);
 
         // move scores to memory for sort and progress
-        uint count = GetTopScoresSecureCount();
+        uint count = GetTopScoresSecureCount(gameId);
 
         Score[] memory scores = new Score[](count);
 
         uint i;
         for (i = 0; i < count; i++) {
-            Score memory score = TopScoresSecure[i];
+            Score memory score = TopScoresSecure1[gameId][i];
             //scores.push(score);
             scores[i] = score;
         }
@@ -496,15 +501,15 @@ contract PlayerScore is Ownable
         emit WinnerPayout(player, rank, reward);
     }
 
-    function WipeScores()
+    function WipeScores(uint gameId)
         public
         onlyOwner
     {
         lastWipeDate = now;
 //        TopScores.length = 0;
 //        BaseIndexSecure += TopScoresSecureCount; //TopScoresSecure.length;
-        BaseIndexSecure = TopScoresSecure.length;
-        TopScoresSecureCount = 0;
+        BaseIndexSecure1[gameId] = TopScoresSecure1[gameId].length;
+        TopScoresSecureCount1[gameId] = 0;
     }
 
     // SEASON PAYOUT ]
