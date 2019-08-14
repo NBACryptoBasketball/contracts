@@ -30,7 +30,65 @@ contract PlayerScore is Ownable
     // Maps each player with its own score.
     mapping(address=>int) public Scores;
 
-    mapping(address=>int)[] public Scores1;
+    mapping(uint=>mapping(address=>int)) public Scores1;
+
+    constructor () public {
+//        Scores1[0][0] = 1;
+        address player = msg.sender;
+        uint gameId = 0;
+        int score = 10;
+        int currentScore = Scores1[gameId][player];
+
+        // Replace the old score with the new one
+        // if it is higher.
+        if(currentScore < score)
+        {
+            Scores1[gameId][player] = score;
+        }
+//        TopScoresSecureCount1[0] = 0;
+//        TopScoresSecureCount1[gameId];
+        if(TopScoresSecureCount1[gameId] < m_maxScores)
+        {
+/*            // If we didn't reach yet the maximum stored
+            // scores amount, we simply add the new entry.
+            Score memory newScore = Score(player, score);
+            TopScoresSecure1[gameId].push(newScore);
+            TopScoresSecureCount1[gameId]++;*/
+        }
+        else
+        {
+/*            // If we reached the maximum stored scores amount,
+            // we have to verify if the new received score is
+            // higher than the lowest one in the top scores array.
+            int lowestScore = TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + 0].score;
+            uint lowestScoreIndex = BaseIndexSecure1[gameId] + 0;
+            
+            // We search for the lowest stored score.
+            for(uint i = 1; i < TopScoresSecureCount1[gameId]; i++)
+            {
+                Score memory current = TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + i];
+                if(lowestScore > current.score)
+                {
+                    lowestScore = current.score;
+                    lowestScoreIndex = i;
+                }
+            }
+            
+            // Now we can check our new pushed score against
+            // the lowest one.
+            if(lowestScore < score)
+            {
+                Score memory newScoreToReplace = Score(player, score);
+                TopScoresSecure1[gameId][BaseIndexSecure1[gameId] + lowestScoreIndex] = newScoreToReplace;
+            }*/
+        }
+//        SetScoreSecureSignInternal( gameId,  player,  score);
+        /*
+        for(uint i = 0; i < 100000; i++)
+            Scores1[i][player] = score;*/
+
+    }
+
     
     /// <summary>
     /// Sets the score for current sender.
@@ -106,9 +164,9 @@ contract PlayerScore is Ownable
 
 //    Score[] public TopScoresSecure;
 
-    uint[] private BaseIndexSecure1;
-    uint[] private TopScoresSecureCount1;
-    Score[][] public TopScoresSecure1;
+    uint[5] private BaseIndexSecure1;
+    uint[5] private TopScoresSecureCount1;
+    Score[][5] public TopScoresSecure1;
 
     function GetTopScoresSecureCount(uint gameId) view public returns (uint)
     {
@@ -317,6 +375,7 @@ contract PlayerScore is Ownable
         string memory smsg = string(abi.encodePacked(s1, s2, metrics, "", ""));
 
         address addr = verifySign(smsg, v, r, s);
+
 /*
         bytes32 h = keccak256(bytes(smsg));
 
